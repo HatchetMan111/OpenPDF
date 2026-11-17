@@ -1,0 +1,3255 @@
+[
+  {
+    "name": "pdf_stand",
+    "description": "Read this first. The state of the app in one small answer: the open documents (index, file name, page count, current page, modified, active), the index of the active tab, the active tool and the ids of the selected markups. Use pdf_list_annotations, pdf_get_page_text and the other pdf_* tools for details.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "App state",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_set_zoom",
+    "description": "Set the page-view zoom in the LIVE app. scale=1.0 means 100%, 2.0 means 200%, etc.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "scale": {
+          "maximum": 32,
+          "minimum": 0.05,
+          "type": "number"
+        }
+      },
+      "required": [
+        "scale"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Set zoom"
+    }
+  },
+  {
+    "name": "pdf_zoom_in",
+    "description": "Trigger one zoom-in step in the LIVE app (same as the toolbar +).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Zoom in"
+    }
+  },
+  {
+    "name": "pdf_zoom_out",
+    "description": "Trigger one zoom-out step in the LIVE app (same as the toolbar -).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Zoom out"
+    }
+  },
+  {
+    "name": "pdf_screenshot_view",
+    "description": "Capture the LIVE app as a base64 PNG. scope 'document' (default) composites the PDF canvas with the annotation/highlight overlays, without the surrounding interface. scope 'window' captures the whole app window as it is shown: ribbon (including extension tabs), side panels such as an extension's workspace panel, the document view and the status bar. scope 'element' crops that window capture to the element matched by `selector`. The longer side is scaled down to `width`. Returns { png_base64, width, height, scope, bounds: { x, y, width, height } (the captured area in CSS px), devicePixelRatio }. 'window' and 'element' use a native capture of the web view and are available on Windows only for now; on other platforms they return an error. In the browser (OpenAEC workplace) not available: scope \"window\", \"element\"; selector.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "default": "document",
+          "description": "'document' (the page view), 'window' (the whole app window) or 'element' (one element, needs selector).",
+          "enum": [
+            "document"
+          ],
+          "type": "string"
+        },
+        "width": {
+          "default": 2000,
+          "description": "Maximum length in px of the longer side of the PNG.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Capture page view"
+    }
+  },
+  {
+    "name": "pdf_capture_region",
+    "description": "Render an area of a page (or the whole page) of the active document as an image at a chosen resolution, the way Home > Screenshot does: the page is rendered again at `dpi` (not the screen pixels enlarged), with the annotations as printed (no selection frames), in the view rotation the user sees. Coordinates are app points (page space, top-left origin, 100% zoom); leave x, y, width and height out for the whole page. Very large images are scaled down to at most 16384 px per side and 64 megapixels (`limited` is then true and `dpi` the resolution used). Returns { page, rect, width, height, dpi, limited, mime } plus image_base64, or with `path` the image is written to that file and { path, bytes } is returned instead of the base64. Nothing is put on the clipboard. In the browser (OpenAEC workplace) not available: path.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "dpi": {
+          "default": 150,
+          "description": "Resolution in pixels per inch of paper.",
+          "maximum": 2400,
+          "minimum": 10,
+          "type": "number"
+        },
+        "format": {
+          "default": "png",
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "type": "string"
+        },
+        "height": {
+          "description": "Height in app points.",
+          "type": "number"
+        },
+        "page": {
+          "description": "Page number (default: the current page).",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "quality": {
+          "default": 90,
+          "description": "JPEG quality.",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "width": {
+          "description": "Width in app points.",
+          "type": "number"
+        },
+        "x": {
+          "description": "Left edge in app points.",
+          "type": "number"
+        },
+        "y": {
+          "description": "Top edge in app points.",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Capture page area as image"
+    }
+  },
+  {
+    "name": "pdf_mouse_move",
+    "description": "Dispatch a synthetic mousemove at viewport CSS coordinates (x, y) inside the LIVE WebView. Returns the element under the cursor.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Move pointer"
+    }
+  },
+  {
+    "name": "pdf_mouse_click",
+    "description": "Dispatch a synthetic mouse click at (x, y). Sequence: mousemove -> mousedown -> mouseup -> click (or contextmenu for right). button: 'left' (default) | 'middle' | 'right'.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "default": "left",
+          "enum": [
+            "left",
+            "middle",
+            "right"
+          ],
+          "type": "string"
+        },
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Click"
+    }
+  },
+  {
+    "name": "pdf_mouse_drag",
+    "description": "Dispatch a synthetic drag from (x1,y1) to (x2,y2) using `steps` interpolated mousemove events. Sequence: mousedown(x1,y1) -> N x mousemove -> mouseup(x2,y2). button: 'left' (default) | 'middle' | 'right'.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "default": "left",
+          "enum": [
+            "left",
+            "middle",
+            "right"
+          ],
+          "type": "string"
+        },
+        "steps": {
+          "default": 10,
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "x1": {
+          "type": "integer"
+        },
+        "x2": {
+          "type": "integer"
+        },
+        "y1": {
+          "type": "integer"
+        },
+        "y2": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x1",
+        "y1",
+        "x2",
+        "y2"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Drag"
+    }
+  },
+  {
+    "name": "pdf_scroll",
+    "description": "Dispatch a synthetic wheel event at (x, y) with delta (dx, dy) in CSS pixels. Set ctrlKey=true to test ctrl+wheel zoom-to-cursor.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "altKey": {
+          "default": false,
+          "type": "boolean"
+        },
+        "ctrlKey": {
+          "default": false,
+          "type": "boolean"
+        },
+        "dx": {
+          "default": 0,
+          "type": "integer"
+        },
+        "dy": {
+          "default": 0,
+          "type": "integer"
+        },
+        "metaKey": {
+          "default": false,
+          "type": "boolean"
+        },
+        "shiftKey": {
+          "default": false,
+          "type": "boolean"
+        },
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Scroll"
+    }
+  },
+  {
+    "name": "pdf_key",
+    "description": "Press a single key (with optional modifiers) on the focused element. Dispatches keydown then keyup. e.g. {key:'Escape'} or {key:'z', ctrl:true} for undo.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "default": false,
+          "type": "boolean"
+        },
+        "ctrl": {
+          "default": false,
+          "type": "boolean"
+        },
+        "key": {
+          "type": "string"
+        },
+        "meta": {
+          "default": false,
+          "type": "boolean"
+        },
+        "shift": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Press key"
+    }
+  },
+  {
+    "name": "pdf_type",
+    "description": "Type a string into the focused element. For each character: keydown -> beforeinput -> (value splice) -> input -> keyup. Editable inputs receive value updates; non-editable elements receive only the key events.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Type text"
+    }
+  },
+  {
+    "name": "pdf_get_viewport_state",
+    "description": "Probe the LIVE viewport state: render engine + timing chip, active document scale/page/viewMode, pdf-viewport singleton transform, pdf-canvas backing-store + CSS rect, high-zoom tile-overlay state (visible/hidden + position+size), pdf-container CSS rect + scroll offsets, and devicePixelRatio. Use this for any case where screen↔world coordinate mapping or zoom-state needs to be validated externally — e.g. after dispatching a zoom or scroll via `pdf_scroll`/`pdf_set_zoom`, call this to see where things landed.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get view state"
+    }
+  },
+  {
+    "name": "pdf_go_to_page",
+    "description": "Navigate the active document to a 1-based page number, exactly as if the user picked the page in the page box or clicked its thumbnail.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "description": "1-based target page number.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Go to page"
+    }
+  },
+  {
+    "name": "pdf_set_tool",
+    "description": "Switch the LIVE app's active tool, exactly like clicking the ribbon button. Accepts any registered tool name, e.g. select, hand, line, arrow, draw, box, circle, polyline, spline, arc, filledArea, textbox, callout, comment, stamp, highlight, editText, measureDistance, measureArea, measurePerimeter, measureAngle, scaleRegion, trim, extend. Returns the tool that is actually active afterwards (PDF/A read-only mode can refuse the switch).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "description": "Registered tool name.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Select tool"
+    }
+  },
+  {
+    "name": "pdf_click_element",
+    "description": "Click an arbitrary DOM element in the LIVE app by CSS selector (usually '#button-id'). If the element lives on an inactive ribbon tab, the matching tab is activated first (the ribbon only renders the active tab's content). Returns { ok, found, disabled, clicked, activatedTab, activeTab }: activatedTab is the ribbon tab this call activated (the tab the search opened, the tab whose button was clicked, also an extension tab, or the tab the click switched to), activeTab the ribbon tab active afterwards. Disabled elements are reported but NOT clicked. Set searchTabs=false to probe only the current DOM (e.g. for dialogs) without touching the ribbon tabs.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "searchTabs": {
+          "default": true,
+          "description": "Walk the ribbon tabs when the selector is not in the current DOM.",
+          "type": "boolean"
+        },
+        "selector": {
+          "description": "CSS selector of the element to click, e.g. '#dr-line'.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "selector"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Click interface element"
+    }
+  },
+  {
+    "name": "pdf_get_current_tool",
+    "description": "Return the LIVE app's currently active tool name (state.currentTool).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get current tool"
+    }
+  },
+  {
+    "name": "pdf_rotate_pages",
+    "description": "Rotate pages of the active document by a quarter, half or three-quarter turn, as one undo step, the same way Organize > Rotate does: the markups on those pages and the measurement scales of the PDF turn along. Returns { ok, angle, pages, rotations: [{ page, rotation }] }, where rotation is the app's rotation on top of the page's own /Rotate; it is written into the file on save. Refused in a read-only document (PDF/A without editing enabled, password-protected).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "angle": {
+          "description": "Degrees clockwise; -90 turns counter-clockwise.",
+          "enum": [
+            90,
+            180,
+            270,
+            -90
+          ],
+          "type": "integer"
+        },
+        "pages": {
+          "description": "Page numbers (1-based) to rotate, each once.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "pages",
+        "angle"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Rotate pages"
+    }
+  },
+  {
+    "name": "pdf_delete_pages",
+    "description": "Delete pages from the active document, as one undo step, the same way Organize > Delete does: the markups on the deleted pages go with them, the others, the page labels and the measurement scales move along. A document keeps at least one page: deleting every page is refused. Returns { ok, deleted, pagesBefore, pagesAfter, currentPage }. Refused in a read-only document.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "description": "Page numbers (1-based) to delete, each once.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Delete pages"
+    }
+  },
+  {
+    "name": "pdf_insert_blank_pages",
+    "description": "Insert blank pages into the active document, as one undo step, the same way Organize > Insert does. Without widthPt and heightPt the new pages get the size of page `after` (the first page when after is 0). Returns { ok, inserted (the new page numbers), widthPt, heightPt, pagesBefore, pagesAfter, currentPage }. Refused in a read-only document.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "description": "Insert after this page number; 0 inserts before the first page.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "count": {
+          "default": 1,
+          "description": "Number of blank pages.",
+          "maximum": 500,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "heightPt": {
+          "description": "Page height in points. Give together with widthPt.",
+          "maximum": 14400,
+          "minimum": 3,
+          "type": "number"
+        },
+        "widthPt": {
+          "description": "Page width in points (1/72 inch, A4 is 595.28 x 841.89). Give together with heightPt.",
+          "maximum": 14400,
+          "minimum": 3,
+          "type": "number"
+        }
+      },
+      "required": [
+        "after"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Insert blank pages"
+    }
+  },
+  {
+    "name": "pdf_reorder_pages",
+    "description": "Put the pages of the active document in a new order, as one undo step, the same way dragging thumbnails does: markups, page labels and measurement scales move with their page. order[i] is the current page number that becomes page i+1, and lists every page exactly once (for 3 pages, [3, 1, 2] moves the last page to the front). Returns { ok, changed, order, pages, currentPage }; the current order gives changed false. Refused in a read-only document.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "order": {
+          "description": "The new order: every current page number (1-based) exactly once.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "order"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Reorder pages"
+    }
+  },
+  {
+    "name": "pdf_shift_pages",
+    "description": "Shift the content of pages by a fixed distance, as one undo step, the same way Organize > Shift page does: the page content is moved (not rasterized), and the markups, links, form fields and measurement scales on those pages move along. Directions are as the page is displayed (including its rotation): dx positive to the right, dy positive up. Returns { ok, pages, dx, dy, shifted } with shifted the number of pages that moved; pages without content and markups are left alone. Refused in a read-only document.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "dx": {
+          "default": 0,
+          "description": "Horizontal shift in millimetres; positive is to the right.",
+          "maximum": 5080,
+          "minimum": -5080,
+          "type": "number"
+        },
+        "dy": {
+          "default": 0,
+          "description": "Vertical shift in millimetres; positive is up.",
+          "maximum": 5080,
+          "minimum": -5080,
+          "type": "number"
+        },
+        "pages": {
+          "description": "Page numbers (1-based) to shift, each once.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Shift page content"
+    }
+  },
+  {
+    "name": "pdf_bookmarks",
+    "description": "Read and edit the bookmarks (outline) of the active document, the same way the Bookmarks panel does; every change is one undo step and is written into the file on save. list returns { ok, count, bookmarks: [{ id, title, page, parentId, level, children, bold, italic, color }] } in panel order (a parent before its children). add takes title, optional page (default the current page), parentId, bold, italic and color, appends the bookmark at the end of its parent and returns { ok, bookmark }. update takes id and any of title (rename), page, bold, italic, color (null clears it). delete takes ids and removes them with everything under them: { ok, deleted, count, remaining }. move takes ids, position (before, after or inside targetId, or end of the top level without targetId) and refuses a move into a bookmark's own children. Edits are refused in a read-only document.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "list",
+            "add",
+            "update",
+            "delete",
+            "move"
+          ],
+          "type": "string"
+        },
+        "bold": {
+          "description": "add, update: bold title.",
+          "type": "boolean"
+        },
+        "color": {
+          "description": "add, update: title colour #rrggbb; null clears it.",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "update: the bookmark id (from list).",
+          "type": "string"
+        },
+        "ids": {
+          "description": "delete, move: bookmark ids (from list).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "italic": {
+          "description": "add, update: italic title.",
+          "type": "boolean"
+        },
+        "page": {
+          "description": "add, update: the page the bookmark goes to (1-based).",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "parentId": {
+          "description": "add: put the new bookmark under this bookmark; left out or null: the top level.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position": {
+          "description": "move: before or after targetId (same parent), inside targetId (as its last children), or end of the top level.",
+          "enum": [
+            "before",
+            "after",
+            "inside",
+            "end"
+          ],
+          "type": "string"
+        },
+        "targetId": {
+          "description": "move: the bookmark to move before, after or inside. Not with position end.",
+          "type": "string"
+        },
+        "title": {
+          "description": "add, update: the bookmark title (one line).",
+          "maxLength": 1000,
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Manage bookmarks"
+    }
+  },
+  {
+    "name": "pdf_watermarks",
+    "description": "List, add and remove the watermarks and headers/footers of the active document, the same way the Watermark, Header & Footer and Manage dialogs do; every change is one undo step, shown at once and written into the pages on save. list returns { ok, count, watermarks } (an image watermark without its image data). add with type text (text, fontFamily, fontSize, color, opacity 0-1, rotation, position, customX/customY, layer), image (imagePath of a PNG or JPEG file, opacity, scale, rotation, position, customX/customY, layer) or headerFooter (headerLeft/Center/Right, footerLeft/Center/Right with the variables {page} {pages} {date} {time} {filename} {title} {bates}, fontFamily, fontSize, color, margins, Bates numbering); pages limits it to those pages, otherwise every page. Fields left out take the dialog defaults. Returns { ok, watermark, count }. remove takes id: { ok, removed, remaining }. Changes are refused in a read-only document. In the browser (OpenAEC workplace) not available: type \"image\"; imagePath.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "list",
+            "add",
+            "remove"
+          ],
+          "type": "string"
+        },
+        "batesDigits": {
+          "description": "headerFooter: digits with leading zeros (default 6).",
+          "maximum": 12,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "batesPrefix": {
+          "description": "headerFooter: text before the Bates number.",
+          "maxLength": 500,
+          "type": "string"
+        },
+        "batesStart": {
+          "description": "headerFooter: first Bates number (default 1).",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "batesSuffix": {
+          "description": "headerFooter: text after the Bates number.",
+          "maxLength": 500,
+          "type": "string"
+        },
+        "color": {
+          "description": "text (default #ff0000), headerFooter (default #000000): colour #rrggbb.",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "type": "string"
+        },
+        "customX": {
+          "description": "text, image with position custom: centre x in points from the left.",
+          "maximum": 14400,
+          "minimum": 0,
+          "type": "number"
+        },
+        "customY": {
+          "description": "text, image with position custom: centre y in points from the top.",
+          "maximum": 14400,
+          "minimum": 0,
+          "type": "number"
+        },
+        "fontFamily": {
+          "description": "text, headerFooter (not Georgia): font. Default Helvetica.",
+          "enum": [
+            "Helvetica",
+            "Arial",
+            "Times New Roman",
+            "Courier",
+            "Georgia"
+          ],
+          "type": "string"
+        },
+        "fontSize": {
+          "description": "text (4-288, default 72), headerFooter (1-200, default 10): font size in points.",
+          "maximum": 288,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "footerCenter": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "footerLeft": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "footerRight": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "headerCenter": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "headerLeft": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "headerRight": {
+          "maxLength": 500,
+          "type": "string"
+        },
+        "id": {
+          "description": "remove: the watermark id (from list).",
+          "type": "string"
+        },
+        "layer": {
+          "description": "text, image: behind (default) or in front of the page content.",
+          "enum": [
+            "behind",
+            "infront"
+          ],
+          "type": "string"
+        },
+        "marginBottom": {
+          "description": "headerFooter: points (default 30).",
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "marginLeft": {
+          "description": "headerFooter: points (default 40).",
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "marginRight": {
+          "description": "headerFooter: points (default 40).",
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "marginTop": {
+          "description": "headerFooter: points (default 30).",
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "opacity": {
+          "description": "text (default 0.3), image (default 0.2).",
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "pages": {
+          "description": "add: only on these page numbers (1-based); left out: every page.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "position": {
+          "description": "text, image: where on the page (default center); custom uses customX/customY.",
+          "enum": [
+            "center",
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+            "custom"
+          ],
+          "type": "string"
+        },
+        "rotation": {
+          "description": "text (default -45), image (default 0): degrees.",
+          "maximum": 360,
+          "minimum": -360,
+          "type": "number"
+        },
+        "scale": {
+          "description": "image: size factor of the 200 x 200 pt image box (default 1).",
+          "maximum": 10,
+          "minimum": 0.01,
+          "type": "number"
+        },
+        "text": {
+          "description": "text: the watermark text.",
+          "maxLength": 500,
+          "type": "string"
+        },
+        "type": {
+          "description": "add: what to add.",
+          "enum": [
+            "text",
+            "headerFooter"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Manage watermarks and headers/footers"
+    }
+  },
+  {
+    "name": "pdf_create_annotation",
+    "description": "Create an annotation on the LIVE app's active document WITHOUT synthetic mouse input. Builds the same object the interactive tool would, pushes it onto the document, records an undo step and redraws. Geometry goes in `props` (page coordinates at 100% zoom): line/arrow/measureDistance need startX/startY/endX/endY; box/circle/highlight/cloud/textbox/callout/scaleRegion need x/y/width/height (highlight is an area highlight; optional rotation in degrees turns it about its centre); textHighlight is a real text highlight and needs quads:[[ul,ur,ll,lr],...], one quad per piece of text with {x,y} corners in the order upper left, upper right, lower left, lower right, turned along angled text (the same object as a text highlight made by selecting text; default color #FFFF00, opacity 0.3; its box comes from the quads, a passed x/y/width/height is ignored; invalid quads give an error and create nothing); polygon takes its corners as points:[{x,y},...] (>= 3), or x/y/width/height (+ optional sides, default 6) for a regular polygon in that box; polyline/filledArea/measureArea/measurePerimeter need points:[{x,y},...]; spline needs controlPoints; draw needs path; comment needs x/y; link makes the same hyperlink as the Link tool and needs a target, either uri (web or e-mail address: http, https, mailto, tel or ftp) or page (target page in this document, 1-based; then the annotation itself goes on the top-level page) with optional view \"XYZ\" (default, top of the page), \"Fit\" or {type:\"XYZ\",left,top,zoom} (left/top in PDF points), plus x/y/width/height for the click box or quads:[[ul,ur,ll,lr],...] for one box per text line (written as /QuadPoints), optional border \"none\" (default) | \"solid\" | \"underline\" with color and lineWidth; a link to a page follows that page when pages are moved, inserted or deleted, and becomes broken when its target page is deleted. Optional style props (color, strokeColor, fillColor, lineWidth, opacity, text, fontSize, scaleString, units, leaderStartX/Y, leaderEndX/Y, dimShowUnit (measureDistance: false shows the number only), dimLineOvershootMm / dimExtGapMm / dimExtOvershootMm (measureDistance: overshoot of the dimension line, gap and overshoot of the extension lines, in paper mm), measureShowLabel (measureArea: false hides its own label), ...) override the tool defaults. measure* annotations get measureText computed from the document scale automatically. Returns the new annotation id.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "layer": {
+          "description": "Markup layer to draw on, by id or name (see app_list_layers). Left out: the current layer, as with the interactive tool. An unknown layer is an error; create it first with app_create_layer.",
+          "type": "string"
+        },
+        "page": {
+          "description": "1-based target page. Defaults to the current page.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "props": {
+          "description": "Geometry + style properties for the annotation.",
+          "type": "object"
+        },
+        "type": {
+          "enum": [
+            "line",
+            "arrow",
+            "wall",
+            "box",
+            "mask",
+            "redaction",
+            "viewport",
+            "circle",
+            "highlight",
+            "textHighlight",
+            "link",
+            "cloud",
+            "polygon",
+            "polyline",
+            "cloudPolyline",
+            "spline",
+            "draw",
+            "filledArea",
+            "textbox",
+            "callout",
+            "comment",
+            "stamp",
+            "signature",
+            "image",
+            "parametricSymbol",
+            "measureDistance",
+            "measureArea",
+            "measurePerimeter",
+            "scaleRegion",
+            "count"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "props"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Create annotation"
+    }
+  },
+  {
+    "name": "pdf_list_annotations",
+    "description": "List the active document's annotations as compact JSON (id, type, page, core geometry, colors, text/measureText, and the markup layer when it is not the default layer). Optionally filter to one page or one layer.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "layer": {
+          "description": "Only annotations on this markup layer, by id or name.",
+          "type": "string"
+        },
+        "page": {
+          "description": "Only annotations on this 1-based page.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "List annotations"
+    }
+  },
+  {
+    "name": "pdf_get_annotation",
+    "description": "Return the full JSON-safe property set of one annotation by id (functions/DOM refs stripped). A grid line also reports `gridAlignment`: per end its group, whether it is locked, the number of linked ends and whether it can be locked.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get annotation"
+    }
+  },
+  {
+    "name": "pdf_update_annotation",
+    "description": "Merge `props` onto an existing annotation (geometry, color, lineWidth, text, ...). Records a modify-undo step, recomputes measureText when measurement geometry changed, and redraws. `id` and `type` are immutable. `layer` moves the annotation to another markup layer; `props` may then be empty. Grid line (parametricSymbol `stramien`): `alignStart` / `alignEnd` true couples that end with the aligned ends of the other grid lines (dragging one end then moves them all), false unlocks it.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Move the annotation to this markup layer, by id or name (see app_list_layers).",
+          "type": "string"
+        },
+        "props": {
+          "description": "Property patch to merge onto the annotation.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "props"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Update annotation"
+    }
+  },
+  {
+    "name": "pdf_delete_annotation",
+    "description": "Delete an annotation by id (records a delete-undo step and redraws).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Delete annotation"
+    }
+  },
+  {
+    "name": "pdf_select_annotation",
+    "description": "Select one annotation by id so the properties panel and selection handles show it, exactly like clicking it with the select tool.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Select annotation"
+    }
+  },
+  {
+    "name": "pdf_clear_selection",
+    "description": "Clear the annotation selection and hide the properties panel.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Clear selection"
+    }
+  },
+  {
+    "name": "pdf_undo",
+    "description": "Undo the last annotation/page edit on the active document (same as Ctrl+Z).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Undo"
+    }
+  },
+  {
+    "name": "pdf_redo",
+    "description": "Redo the last undone edit on the active document (same as Ctrl+Y).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Redo"
+    }
+  },
+  {
+    "name": "pdf_list_tabs",
+    "description": "List all open document tabs: index, fileName, filePath, modified flag, active flag, pageCount, isUntitled, currentPage, annotationCount.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "List document tabs"
+    }
+  },
+  {
+    "name": "pdf_switch_tab",
+    "description": "Activate the document tab at `index` (0-based, see pdf_list_tabs).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Switch document tab"
+    }
+  },
+  {
+    "name": "pdf_close_tab",
+    "description": "Close the document tab at `index` (0-based). If the document has unsaved changes the call fails unless force=true (discard) or save=true (save-and-close) — it never opens a save dialog, so the bridge stays headless-safe. When save=true and the document carried digital signatures that no longer hold for the saved file, the result also contains `signaturesInvalidated: true`. In the browser (OpenAEC workplace) not available: save true.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "force": {
+          "default": false,
+          "description": "Discard unsaved changes.",
+          "type": "boolean"
+        },
+        "index": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Close document tab"
+    }
+  },
+  {
+    "name": "pdf_new_blank_pdf",
+    "description": "Create a new blank PDF document in a new tab (page size in PDF points; A4 portrait = 595 x 842).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "heightPt": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "pages": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "widthPt": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "widthPt",
+        "heightPt"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "New blank PDF"
+    }
+  },
+  {
+    "name": "pdf_set_view_mode",
+    "description": "Switch the active document view: 'single' page, 'continuous' vertical scroll, or 'book' (two-page spread, page 1 on the right). 'book' is a continuous variant.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "single",
+            "continuous",
+            "book"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Set view mode"
+    }
+  },
+  {
+    "name": "pdf_fit_page",
+    "description": "Zoom the active document so the whole page fits the viewport (same as the Fit Page button). Returns the resulting zoom.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Fit page"
+    }
+  },
+  {
+    "name": "pdf_fit_width",
+    "description": "Zoom the active document so the page width fills the viewport (same as the Fit Width button). Returns the resulting zoom.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Fit width"
+    }
+  },
+  {
+    "name": "pdf_get_page_count",
+    "description": "Return the active document's page count and current page.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get page count"
+    }
+  },
+  {
+    "name": "pdf_recognize_form",
+    "description": "Detect heuristic form-field candidates on selected saved PDF pages, excluding existing fields. Review/correct labels, type, bounds in unrotated PDF points, required flags, radio grouping and order before setting accepted=true. saveCopy requires the returned revision and sourceId plus a NEW PDF outputPath. Existing fields/artwork remain. OCR labels require desktop OCR; no fields are accepted automatically. In the browser (OpenAEC workplace) not available: action \"saveCopy\"; outputPath; ocr true.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "detect"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 1,
+          "maxItems": 50
+        },
+        "lang": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "sourceId": {
+          "type": "string"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "checkbox",
+                  "radio"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "accepted": {
+                "type": "boolean"
+              },
+              "order": {
+                "type": "number"
+              },
+              "group": {
+                "type": "string"
+              },
+              "groupLabel": {
+                "type": "string"
+              },
+              "option": {
+                "type": "string"
+              },
+              "bounds": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "width": {
+                    "type": "number"
+                  },
+                  "height": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "page",
+              "type",
+              "name",
+              "label",
+              "accepted",
+              "order",
+              "bounds"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "action",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Recognize form fields",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_search_symbols",
+    "description": "Search page artwork for a selected symbol rectangle in current page-view coordinates at scale 1. Review candidates before accept, which creates undoable standard count annotations without duplicating same-category counts at the same location. Search bounded to 20 pages, 1200 pixels per edge and 1000 results. Similarity is not certainty. Results expire after 20 minutes or source changes. navigate reveals a result.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "search",
+            "accept",
+            "navigate"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "templatePage": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rect": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "additionalProperties": false
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "maxItems": 20
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1
+        },
+        "rotations": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
+          },
+          "maxItems": 4
+        },
+        "scales": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 2
+          },
+          "maxItems": 3
+        },
+        "queryId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 1000
+        },
+        "category": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "markerStyle": {
+              "type": "string",
+              "enum": [
+                "dot"
+              ]
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "action",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Find repeated symbols",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_search_documents",
+    "description": "Search text and optional comments in the active PDF, all open PDFs, or PDF files directly in a desktop folder. Reads open unsaved documents in memory; never saves or uploads. Returns grouped file statuses and bounded matches with page labels, snippets and coordinates. Encrypted, unreadable and textless pages are reported separately. No persistent index. Refine the query when truncated. In the browser (OpenAEC workplace) not available: scope \"folder\"; folder.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "active",
+            "open"
+          ],
+          "default": "open"
+        },
+        "annotations": {
+          "type": "boolean",
+          "default": true
+        },
+        "matchCase": {
+          "type": "boolean",
+          "default": false
+        },
+        "wholeWord": {
+          "type": "boolean",
+          "default": false
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2000,
+          "default": 500
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Search documents",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_locations",
+    "description": "List computed markup locations or edit named spatial zones and explicit location overrides. Mutations require the active documentId and annotationId. Zones use existing straight polygons or unrotated boxes. Reuses undo and saves metadata with the PDF.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "zone",
+            "removeZone",
+            "override",
+            "automatic"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "annotationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Manage spatial locations",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_hidden_information",
+    "description": "Inspect structural metadata, comments, embedded files, actions and optional-content indicators in the saved active PDF. Export selected removable categories to a NEW PDF and JSON report; existing files are never overwritten. Pending changes must be saved first. Hidden/covered text, image pixels and optional-content layers are not removed; existing signatures cannot survive rewriting. In the browser (OpenAEC workplace) not available: action \"export\"; outputPath.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "inspect"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "metadata",
+              "comments",
+              "attachments",
+              "actions"
+            ]
+          }
+        }
+      },
+      "required": [
+        "action",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect and export cleaned copy",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_print_preflight",
+    "description": "Inspect the saved active PDF against a reusable print profile. Reports page/object, severity, expected and observed values for fonts, image DPI, color, transparency, page boxes and output intent. Not a PDF/X or PDF/A certificate. fixTrimBoxes explicitly writes a NEW copy and report and rechecks; existing files are refused. Save pending edits first. In the browser (OpenAEC workplace) not available: action \"fixTrimBoxes\"; outputPath.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "inspect"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "integer",
+              "enum": [
+                1
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "minDpi": {
+              "type": "number",
+              "minimum": 36,
+              "maximum": 2400
+            },
+            "embeddedFonts": {
+              "type": "boolean"
+            },
+            "allowRgb": {
+              "type": "boolean"
+            },
+            "allowTransparency": {
+              "type": "boolean"
+            },
+            "outputIntent": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "action",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect print readiness",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_review_ocr",
+    "description": "List low/unknown-confidence OCR words with page coordinates and review state, or accept/correct one word. Requires documentId; mutations also require revision and expectedText from the list to reject stale edits. Save afterward to replace the invisible OCR text layer. Never paints over the scan. Results are paginated.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "accept",
+            "correct"
+          ]
+        },
+        "documentId": {
+          "type": "string"
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectedText": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "action",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Verify OCR text",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "pdf_get_page_text",
+    "description": "Read existing PDF page text without mouse automation. Returns document-bound span IDs, readable merged text, page-space bounding boxes, PDF anchors, font family/size, rotation and fill colour when recoverable. Pass a page number or omit it for the current page. Text is never sent outside the local MCP connection.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "description": "1-based page number; defaults to the current page.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Read existing page text"
+    }
+  },
+  {
+    "name": "pdf_replace_text",
+    "description": "Replace one existing PDF text span returned by pdf_get_page_text. Requires the exact expected text to reject stale IDs. Preserves the page artwork by refusing edits that cannot remove the original text in place; fits the replacement inside its original width and embeds a full fallback font when the subset lacks glyphs. On a scanned page with an invisible OCR layer the scanned word is covered and the replacement is drawn visibly, as in the editor (reply: coveredScannedText). Changes stay pending until pdf_save_pdf is called. One line per call; for translation, map translated lines to span IDs and call repeatedly.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "description": "Required only when the source fill colour could not be recovered.",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "type": "string"
+        },
+        "expectedText": {
+          "description": "Exact current text returned for that span.",
+          "type": "string"
+        },
+        "newText": {
+          "description": "Replacement text on one line (may be empty to delete).",
+          "type": "string"
+        },
+        "spanId": {
+          "description": "Opaque span ID from app_get_page_text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "spanId",
+        "expectedText",
+        "newText"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Replace existing page text"
+    }
+  },
+  {
+    "name": "pdf_translate_page",
+    "description": "Replace many text spans of one page in a single call, for example to translate the page. Takes spans from pdf_get_page_text with their exact expected text. All or nothing: if any replacement fails, nothing changes and the result lists the error per span. Same rules as pdf_replace_text (in-place removal, fit to the original width, full fallback font when the subset lacks glyphs), checked together on one copy of the PDF and applied as one undo step. Changes stay pending until pdf_save_pdf is called.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "description": "1-based page number; defaults to the page of the first spanId.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "replacements": {
+          "description": "One entry per span to replace, each on one line.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "description": "Required only when the source fill colour could not be recovered.",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "type": "string"
+              },
+              "expectedText": {
+                "description": "Exact current text returned for that span.",
+                "type": "string"
+              },
+              "newText": {
+                "description": "Replacement text on one line (may be empty to delete).",
+                "type": "string"
+              },
+              "spanId": {
+                "description": "Opaque span ID from app_get_page_text.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "spanId",
+              "expectedText",
+              "newText"
+            ],
+            "type": "object"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "replacements"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Replace page text in bulk"
+    }
+  },
+  {
+    "name": "pdf_set_measure_scale",
+    "description": "Set the active document's measurement scale calibration (pixels per unit + unit, e.g. ~2.835 px/mm for 1:1 at 72 dpi) and recalculate every measurement annotation.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "pixelsPerUnit": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "unit": {
+          "description": "Unit name, e.g. mm, cm, m, in, ft.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pixelsPerUnit",
+        "unit"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Set measurement scale"
+    }
+  },
+  {
+    "name": "pdf_get_takeoff",
+    "description": "Return take-off totals for the user's named schedules (Staten): per schedule the element count, the numeric column grand totals (e.g. area m2, length m, count), and per-group subtotals. Optionally target one schedule by id or name; otherwise all schedules are returned. Image/thumbnail columns are reported as counts, never as data-URLs.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Target one schedule by its display name.",
+          "type": "string"
+        },
+        "scheduleId": {
+          "description": "Target one schedule by its id.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get quantity take-off"
+    }
+  },
+  {
+    "name": "pdf_place_schedule",
+    "description": "Build a quantities schedule (Staat) from the annotations in the open document and place it on the page as a table annotation. Without scheduleId a new schedule is created from a template (default 'area'); `config` then overrides its categories/fields/sort. The table contents are computed by the app from the live annotations - the caller supplies no cell values.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "additionalProperties": true,
+          "description": "Schedule config: categories, fields, filters, sort, itemize, format. Overrides the template.",
+          "type": "object"
+        },
+        "name": {
+          "description": "Display name for the schedule.",
+          "type": "string"
+        },
+        "page": {
+          "description": "Page to place the table on (default: current page).",
+          "type": "number"
+        },
+        "scheduleId": {
+          "description": "Reuse an existing schedule instead of creating one.",
+          "type": "string"
+        },
+        "templateId": {
+          "description": "Template for a new schedule: area, length, count, symbol, text, image, full, buigstaat (rebar bending schedule) or wapeningsstaat (rebar weight per diameter). Default: area.",
+          "type": "string"
+        },
+        "x": {
+          "description": "Left edge in page points (default 40).",
+          "type": "number"
+        },
+        "y": {
+          "description": "Top edge in page points (default 40).",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Place quantity schedule"
+    }
+  },
+  {
+    "name": "pdf_structural_layout",
+    "description": "Set out a structural floor plan in one undoable step: the grid (lettered and numbered grid lines with bubbles), columns on the grid intersections, beams along the grid lines, a span-direction arrow per floor bay carrying the real span, spot elevations, position tags (position number / section / level) and - unless switched off - a quantity schedule grouped by IFC category. Bay sizes are REAL millimetres; the app converts them to page points at `scale` and also calibrates the measuring scale so later measurements agree. Profiles: \"HE200B\", \"HEA 200\", \"IPE 300\", \"UNP 200\", \"K100/5\" (square hollow section; rectangular: \"Koker 100x50x5\"), \"L 100x100x10\" (steel) or \"300x500\" (concrete b x h in mm). Use dryRun to see what would be placed without touching the drawing.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "baysX": {
+          "description": "Bay sizes left to right in mm: [5400,5400], '2x5400' or '5400 6000'."
+        },
+        "baysY": {
+          "description": "Bay sizes top to bottom in mm, same notations as baysX."
+        },
+        "beams": {
+          "description": "false to omit, or { profile, direction: x|y|both, prefix, levelMm, edgeOnly }."
+        },
+        "columns": {
+          "description": "false to omit, or { profile, prefix, levelMm, skip: [grid labels] }."
+        },
+        "dryRun": {
+          "description": "Only compute and report; draw nothing.",
+          "type": "boolean"
+        },
+        "floors": {
+          "description": "false to omit, or { direction: x|y|shortest, thicknessMm, levelMm, prefix, text }."
+        },
+        "gridBubbleMm": {
+          "description": "Grid bubble radius in PAPER mm (default 4).",
+          "type": "number"
+        },
+        "gridExtensionMm": {
+          "description": "How far a grid line runs past the outer bay, in mm (default 1500).",
+          "type": "number"
+        },
+        "labelStyleX": {
+          "description": "Label style for the vertical grid lines (default letters).",
+          "enum": [
+            "letters",
+            "numbers"
+          ],
+          "type": "string"
+        },
+        "labelStyleY": {
+          "description": "Label style for the horizontal grid lines (default numbers).",
+          "enum": [
+            "letters",
+            "numbers"
+          ],
+          "type": "string"
+        },
+        "labelsYFromBottom": {
+          "description": "Number the horizontal grid lines from the bottom up, as on a drawing (default true).",
+          "type": "boolean"
+        },
+        "levelMarkers": {
+          "description": "Place a spot elevation per floor bay when a level is given (default true).",
+          "type": "boolean"
+        },
+        "origin": {
+          "additionalProperties": false,
+          "description": "First grid intersection, in page points (top-left origin, 100% zoom).",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "type": "object"
+        },
+        "page": {
+          "description": "Page to draw on (default: current page).",
+          "type": "number"
+        },
+        "scale": {
+          "description": "Drawing scale, e.g. '1:100' (default) or '1:50'.",
+          "type": "string"
+        },
+        "schedule": {
+          "description": "false to omit, or { name, x, y, itemize } for the quantity schedule."
+        },
+        "setMeasureScale": {
+          "description": "Also calibrate the document's measuring scale to this drawing scale (default true).",
+          "type": "boolean"
+        },
+        "tags": {
+          "description": "Tag each element with position number, section and level (default true).",
+          "type": "boolean"
+        },
+        "textHeightMm": {
+          "description": "Tag text height in PAPER mm (default 2.5).",
+          "type": "number"
+        }
+      },
+      "required": [
+        "origin",
+        "baysX",
+        "baysY"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Set out structural layout"
+    }
+  },
+  {
+    "name": "pdf_list_commands",
+    "description": "List EVERY function the app exposes: each ribbon tab, each ribbon button on every tab (label, tab, disabled/active state) plus every drawing tool. Use this to discover how a feature is called before running it with pdf_run_command. Command ids: 'ribbon-tab:<tab>' (activate a ribbon tab), 'ribbon:#<id>' (stable), 'ribbon:<tab>:<n>' (button without an id, only stable within one version), 'tool:<name>'. Optional `filter` narrows by text (matches id, label, title or tab). Tabs and buttons that an extension adds carry the extension tab id in `tab`, including tabs an extension put into the ribbon itself. Extension actions appear as 'ext:<extensionId>:<itemId>'.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "description": "Case-insensitive text filter, e.g. 'scale', 'snippet', 'export'.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "List app commands"
+    }
+  },
+  {
+    "name": "pdf_run_command",
+    "description": "Run any command returned by pdf_list_commands: activates a ribbon tab ('ribbon-tab:<tab>'), clicks the ribbon button (switching to its tab first), runs an extension action ('ext:...') or activates the tool. Disabled buttons are refused.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "description": "Command id from app_list_commands, e.g. 'ribbon:#btn-vector-snippet', 'ribbon-tab:view' or 'tool:measureArea'.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Run app command"
+    }
+  },
+  {
+    "name": "pdf_read_ui",
+    "description": "Read the LIVE app's interface as a compact accessibility-style tree, to check what a click did without a screenshot. Each node has a role (button, tab, tabpanel, group, combobox, option, checkbox, status, text, ...), a name and only the state that applies: disabled, checked, pressed, selected, expanded, active, focused, readonly, plus value/valueText for inputs. Ribbon tabs carry `tab` and the `command` 'ribbon-tab:<tab>'; ribbon buttons and extension controls carry the `command` that pdf_run_command runs. Without `selector` it reads the ribbon (only the active tab's content exists), the side panels, the bars above the document, floating palettes, open dialogs and the status bar, each as a region. With `selector` it reads the matching elements instead, for example an extension's panel. Reads only: it never switches ribbon tabs. maxDepth, maxNodes and maxText keep the output small; `truncated` says when something was left out.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "includeHidden": {
+          "default": false,
+          "description": "Also list hidden elements, marked with state.hidden.",
+          "type": "boolean"
+        },
+        "maxDepth": {
+          "default": 12,
+          "description": "Maximum depth of the tree.",
+          "maximum": 40,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maxNodes": {
+          "default": 400,
+          "description": "Maximum number of nodes over all regions together.",
+          "maximum": 3000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maxText": {
+          "default": 80,
+          "description": "Maximum length of a name, description or value.",
+          "maximum": 1000,
+          "minimum": 8,
+          "type": "integer"
+        },
+        "selector": {
+          "description": "CSS selector of the element(s) to read, e.g. '.ribbon-container', '#left-panel' or '.status-bar'. Default: the standard regions.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Read interface state"
+    }
+  },
+  {
+    "name": "pdf_snippet_cut",
+    "description": "Cut a rectangular area from a page of the active document as a VECTOR snippet (not a raster screenshot) and put it on the app's snippet clipboard. Coordinates are app points (top-left origin, 100% zoom). Paste it into any open document with pdf_snippet_paste.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "description": "Height in app points.",
+          "type": "number"
+        },
+        "page": {
+          "description": "Page to cut from (default: current page).",
+          "type": "number"
+        },
+        "width": {
+          "description": "Width in app points.",
+          "type": "number"
+        },
+        "x": {
+          "description": "Left edge in app points.",
+          "type": "number"
+        },
+        "y": {
+          "description": "Top edge in app points.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Cut vector snippet"
+    }
+  },
+  {
+    "name": "pdf_snippet_paste",
+    "description": "Paste the vector snippet from the snippet clipboard into the active document at real size, as a movable annotation. It stays vector in the saved PDF.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "description": "Target page (default: current page).",
+          "type": "number"
+        },
+        "x": {
+          "description": "Left edge in app points (default 40).",
+          "type": "number"
+        },
+        "y": {
+          "description": "Top edge in app points (default 40).",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Paste vector snippet"
+    }
+  },
+  {
+    "name": "pdf_list_layers",
+    "description": "List the markup layers of the active document in panel order: id, name, colour, visible, printable, locked, the number of markups on it, whether it is the current layer (where new markups land) and whether it is the default layer. Markups without a layer of their own are on the default layer. Reads only.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "List markup layers"
+    }
+  },
+  {
+    "name": "pdf_create_layer",
+    "description": "Create a markup layer in the active document, at the end of the layer list. Names are unique (case-insensitive). Returns the new layer. The layers are saved with the document as optional content groups, so other PDF readers can switch them too.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "description": "Layer colour as #rrggbb.",
+          "type": "string"
+        },
+        "current": {
+          "description": "Make it the current layer, so new markups land on it.",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "Visible, but its markups cannot be selected or moved (default false).",
+          "type": "boolean"
+        },
+        "name": {
+          "description": "Name of the new layer.",
+          "type": "string"
+        },
+        "printable": {
+          "description": "Printed and exported (default true).",
+          "type": "boolean"
+        },
+        "visible": {
+          "description": "Shown on screen (default true). A hidden layer is also not printed, not exported and not selectable.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Create markup layer"
+    }
+  },
+  {
+    "name": "pdf_set_layer",
+    "description": "Change a markup layer of the active document: switch it on or off, make it printable or not, lock or unlock it, rename it, set its colour, or make it the current layer. A layer that is switched off is not drawn, not selectable, not printed and not exported; its markups come back unchanged when it is switched on. Returns the layer and what changed.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "description": "Layer colour as #rrggbb.",
+          "type": "string"
+        },
+        "current": {
+          "description": "true makes it the current layer.",
+          "type": "boolean"
+        },
+        "layer": {
+          "description": "The layer, by id or name (see app_list_layers).",
+          "type": "string"
+        },
+        "locked": {
+          "description": "Lock the layer: visible, but not selectable or movable.",
+          "type": "boolean"
+        },
+        "name": {
+          "description": "New name. The default layer cannot be renamed.",
+          "type": "string"
+        },
+        "printable": {
+          "description": "Print and export the layer.",
+          "type": "boolean"
+        },
+        "visible": {
+          "description": "Switch the layer on (true) or off (false).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "layer"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Change markup layer"
+    }
+  },
+  {
+    "name": "pdf_snippet_flatten",
+    "description": "Mark a pasted vector snippet as flattened: it stays visible but is no longer selectable, and on the next save it is drawn into the page content instead of being stored as an annotation.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "flattened": {
+          "description": "false un-flattens it again (default true).",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Annotation id of the vectorSnippet.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Flatten vector snippet"
+    }
+  },
+  {
+    "name": "pdf_symbol_scale",
+    "description": "Get or set the placement scale for symbols from the symbol palette (1 = real size, 2 = twice as large). Applies to symbols placed from now on; symbols already on the drawing are unchanged. Range 0.1 to 10. Without `scale` it returns the current value.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "scale": {
+          "description": "New placement scale.",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Symbol placement scale"
+    }
+  },
+  {
+    "name": "pdf_titleblock",
+    "description": "Read or fill the title block fields by NAME (projectnaam, adres, opdrachtgever, status, projectnr, fase, auteur, schaal, datum_eerste, wijziging, documenttype, kenmerk — whatever the title block defines). Without `fields` it lists the fields and their current values; with `fields` it fills them, e.g. {\"projectnaam\": \"Woonhuis\", \"schaal\": \"1:50\"}. Unknown names are reported, not silently ignored.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "additionalProperties": true,
+          "description": "Field name to new value.",
+          "type": "object"
+        },
+        "page": {
+          "description": "Limit to one page (default: all pages).",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Fill title block"
+    }
+  },
+  {
+    "name": "pdf_floorplan",
+    "description": "Draw a building floor plan with the parts related to each other, instead of loose shapes stacked on top of one another. Four actions. \"wall\" draws ONE wall run with its openings: the wall is split at every door and window, so the opening really interrupts the wall (the hatch stops at the reveal) and the frame symbol sits in the gap at the wall's own thickness and angle; it returns the wall segment ids in order. Doors and windows are drawn as real frames: timber stiles (67 x 114 mm by default) with a rebate, double glazing or a 40 mm door leaf with its swing. With layers the run is a layered (cavity) wall: start/end are its outside face, every drawn layer gets its own wall segments cut to its own opening (the outer leaf overlaps the frame, the insulation closes against it, the inner leaf keeps a reveal with clearance), the frame stands in the cavity behind the outer leaf, and runs whose outside faces meet in a corner are mitred layer by layer. \"rooms\" derives the enclosed rooms from the walls on a page - net area (inside the wall faces), perimeter and a label point that always falls inside the room - and reports wall ends that leave the contour open instead of silently filling half an area; a door opening does not break the enclosure. With place:true it puts each room on the sheet as a quiet room area (thin grey outline, no hatch or fill, drawn behind the walls and frames) plus ONE movable room tag, remembering the seed point. The room itself carries the name and the optional number (kept on save and reopen); the tag shows the room's name, number and net area. Placing a room that is already on the sheet adds no second area, only a tag if it has none. A click never selects a room (walls, frames and dimensions always win); reach it through its tag. names:[{id or x,y, name, number}] sets name and number on placed rooms; rooms and inspect report id, name, number and tagIds of placed rooms. With refresh:true it re-derives them from the walls as they are now, so a room that grew because a wall moved updates its area and its tag, and the tag keeps its place relative to the room. \"dimensions\" places a dimension chain along a wall run (pier, opening, pier, ...) plus an overall dimension, measured the way a draughtsman does: every point is ANCHORED to the wall face on the side of the chain (for a facade built from separate layers, the face of the outermost layer), and the end points sit on the outer corner of the building, also where the own segment stops short at a butt joint. The dimensions show the number only, black and thin, with extension lines that start a small gap from the wall face and run just past the dimension line, and the dimension line runs a little past the outer extension lines (sizes in paper millimetres, so they do not change with the drawing scale); the default distances grow with the drawing scale so text never runs into the lines. With refresh:true every anchored dimension on the page is recomputed the same way, and a dimension whose wall disappeared is reported as detached rather than broken. With chainOf (the id of any dimension) plus addPoints and/or removePoints an existing dimension or chain is extended or shortened in place: a point between two extension lines splits that segment, a point outside makes the chain longer, removing a point merges two segments; the overall dimension follows, the new segments copy the style of their neighbour, and a point on a wall face is anchored to that wall. A single dimension extended this way becomes a chain. \"inspect\" reads back what is on the page: walls with their length and thickness, openings with width, sill and height, the rooms it finds, open contour ends and how many anchored dimensions there are. Coordinates are page points at 100% zoom; sizes are real millimetres, so the page needs a measurement scale (pdf_set_measure_scale) first. Everything one call creates or changes goes into a single undo step.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "description": "What to do.",
+          "enum": [
+            "inspect",
+            "wall",
+            "rooms",
+            "dimensions"
+          ],
+          "type": "string"
+        },
+        "addPoints": {
+          "description": "dimensions with chainOf: points {x, y} in page points to add as extension lines, between or outside the existing ones.",
+          "type": "array"
+        },
+        "chainOf": {
+          "description": "dimensions: the id of a dimension (measureDistance) whose chain you want to extend or shorten, with addPoints and/or removePoints.",
+          "type": "string"
+        },
+        "end": {
+          "additionalProperties": true,
+          "description": "wall: end of the run as {x, y} in page points.",
+          "type": "object"
+        },
+        "insideSide": {
+          "description": "wall with layers: which side of start->end is inside (default right; a clockwise outline has the inside on the right).",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "type": "string"
+        },
+        "insulation": {
+          "description": "wall: insulation sub-material when material is isolatie (steenwol, glaswol, pir, eps, kooltherm, pur).",
+          "type": "string"
+        },
+        "joinEnd": {
+          "description": "wall: false = the end of the run never joins another wall (see joinStart; default true).",
+          "type": "boolean"
+        },
+        "joinStart": {
+          "description": "wall: false = the start of the run never joins another wall: no mitre, no T, no trim; the end keeps a plain butt cap exactly where it is drawn (default true). Otherwise walls that touch are joined automatically: coincident end points are mitred; ends that just pass or fall short of a wall of the same material are trimmed to a closed corner; an end that stops on a continuing wall (on its centre line, on its face, just short of it or inside it) forms a T, where the same material flows into it and another material butts against its face with a seam. Later: app_update_annotation props noJoinStart / noJoinEnd.",
+          "type": "boolean"
+        },
+        "layers": {
+          "description": "wall: build-up of a layered (cavity) wall, from outside to inside, each {thicknessMm, material, insulation}; material none is an air cavity (not drawn). The run's start/end are then the outside face, thicknessMm and material of the run are ignored. Answer: layers[i].wallIds per drawn layer, per opening frame and layerOpeningsMm, corners = layers mitred at start/end.",
+          "type": "array"
+        },
+        "material": {
+          "description": "wall: hatch material id, e.g. nen47-metselwerk-baksteen, nen47-metselwerk-kunststeen, nen47-beton-gewapend, isolatie, none.",
+          "type": "string"
+        },
+        "maxOpeningMm": {
+          "description": "rooms/inspect: widest gap between two aligned wall ends that still counts as an opening rather than a hole in the contour (default 3000).",
+          "type": "number"
+        },
+        "minPierMm": {
+          "description": "wall: smallest piece of wall that must remain beside an opening (default 0).",
+          "type": "number"
+        },
+        "names": {
+          "description": "rooms: set the name and/or number of placed rooms, each {id (the room area) or x, y (a point inside), name, number}.",
+          "type": "array"
+        },
+        "offsetMm": {
+          "description": "dimensions: distance from the wall face to the chain, in mm (default 500 at 1:50; larger at smaller scales, so the text fits).",
+          "type": "number"
+        },
+        "openings": {
+          "description": "wall: the doors and windows in this run. Each: kind (door|window), widthMm (frame size, outside dimensions; in a single wall this is also the opening), alongMm (centre, measured from start along the wall), sillMm, heightMm, swing (left|right: the hinge side seen from the side the door opens away from), openSide (left|right of the wall direction) or openTo ({x, y}: a point in the room the door opens into; for a window its inside), windowType (fixed|turn|pivot|tilt), showSwing (window: true also draws the opening direction of a turn sash as a dashed quarter circle; default false, because in a plan it reads as a door). Frame, all optional: stileWidthMm (default 67), frameDepthMm (default 114, never deeper than the wall), framePositionMm (outside face of the wall to outside face of the frame; default: behind the outer leaf in a layered wall, centred in a single wall), overlapMm (outer leaf over the frame; default 20 in a layered wall), clearanceMm (reveal of the inner leaf; default 10 in a layered wall), leafThicknessMm (door leaf, default 40).",
+          "type": "array"
+        },
+        "page": {
+          "description": "1-based page (default: the current page).",
+          "type": "number"
+        },
+        "place": {
+          "description": "rooms: also put the rooms on the sheet instead of only reporting them.",
+          "type": "boolean"
+        },
+        "refresh": {
+          "description": "rooms/dimensions: recompute what is already on the sheet from the walls as they are now.",
+          "type": "boolean"
+        },
+        "removePoints": {
+          "description": "dimensions with chainOf: points {x, y} near the extension lines to remove (the measured point or anywhere along the extension line).",
+          "type": "array"
+        },
+        "seeds": {
+          "description": "rooms: points inside the rooms you want, each {x, y, name, number}; number is optional. Without seeds every room found is reported.",
+          "type": "array"
+        },
+        "showUnit": {
+          "description": "dimensions: also show the unit behind the number (default false: the number only, as on a building drawing).",
+          "type": "boolean"
+        },
+        "side": {
+          "description": "dimensions: which side of the run the chain goes, seen along its direction (default right). For an outline drawn clockwise on the sheet, left is outside.",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "type": "string"
+        },
+        "start": {
+          "additionalProperties": true,
+          "description": "wall: start of the run as {x, y} in page points (the wall centre line; with layers the outside face of the wall).",
+          "type": "object"
+        },
+        "thicknessMm": {
+          "description": "wall: real wall thickness in mm (default 100).",
+          "type": "number"
+        },
+        "tolerance": {
+          "description": "dimensions with removePoints: how close (page points) a point must be to an extension line (default 6).",
+          "type": "number"
+        },
+        "totalOffsetMm": {
+          "description": "dimensions: distance from the wall face to the overall dimension, in mm (default offsetMm plus one line of text, at least 350).",
+          "type": "number"
+        },
+        "wallId": {
+          "description": "dimensions: a single wall annotation to dimension.",
+          "type": "string"
+        },
+        "wallIds": {
+          "description": "dimensions: the wall segments of one run, in order along the run (as returned by action \"wall\").",
+          "type": "array"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Draw floor plan"
+    }
+  },
+  {
+    "name": "pdf_facade_element",
+    "description": "Draw and edit a facade element in a floor plan: a curtain wall or a window frame, as ONE object along a line with an outer frame, mullions on the field boundaries and a panel in every field. Everything is at real size (mm) from the measurement scale, so set one first with pdf_set_measure_scale. Actions: \"create\" places a new element, either loose along start/end (page points), or IN an existing wall (wallId plus fromMm or alongMm and lengthMm): the wall is then cut over the length of the element, like a door or window opening, and the element sits in the gap; offsetMm moves it across the wall build-up (+ = right of the wall direction). The division is fields (number of equal fields, centre-to-centre) or fieldWidthsMm (centre-to-centre widths that add up to the length); without either it divides itself into fields of about 1200 mm (curtain wall) or 900 mm (window frame). \"get\" returns one element (id) with its mullions and fields, or without id a summary of every element on the page. Edits (all need id): \"addMullion\" splits a field at atMm (from the start) or in the middle of field; \"removeMullion\" merges the two fields beside mullion (index) or the mullion nearest atMm; \"moveMullion\" moves it to toMm or by byMm; \"setMullionType\" swaps the type of mullion (index 0 and the last index are the outer frame; without mullion or atMm all intermediate mullions); \"setPanel\" swaps the panel of field, fieldIndexes or the field at atMm; \"divide\" divides again into fields or fieldWidthsMm. Mullions are numbered from 0 (frame at the start) to n (frame at the end); field i lies between mullion i and i+1. Fields never become narrower than 100 mm clear and the overall length stays the same, except for divide with fieldWidthsMm. Mullion types: curtain wall alu-50x150 (default), alu-50x200, alu-65x250; window frame hout-67x114 (default), hout-67x139, hout-90x114 (width x depth in mm). Panels: curtain wall glass, solid, door, open; window frame glass, turnSash, door, solid. A panel is a name or {type, hinge: start|end, swing: inside|outside} for a door or turn sash. Every call is a single undo step and returns the element as it is now.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "description": "What to do.",
+          "enum": [
+            "create",
+            "get",
+            "addMullion",
+            "removeMullion",
+            "moveMullion",
+            "setMullionType",
+            "setPanel",
+            "divide"
+          ],
+          "type": "string"
+        },
+        "alongMm": {
+          "description": "create in a wall: distance from the wall start to the MIDDLE of the element, in mm (alternative to fromMm; without both the element is centred).",
+          "type": "number"
+        },
+        "atMm": {
+          "description": "Position along the element from its start, in mm: where addMullion splits, which mullion (nearest) or field setPanel/removeMullion/moveMullion/setMullionType means.",
+          "type": "number"
+        },
+        "byMm": {
+          "description": "moveMullion: shift in mm (+ = towards the end).",
+          "type": "number"
+        },
+        "end": {
+          "additionalProperties": true,
+          "description": "create (loose): end of the element as {x, y} in page points.",
+          "type": "object"
+        },
+        "field": {
+          "description": "addMullion: split this field in the middle; setPanel: the field index (0 = at the start).",
+          "type": "number"
+        },
+        "fieldIndexes": {
+          "description": "setPanel: several field indexes at once.",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "fieldWidthsMm": {
+          "description": "create/divide: centre-to-centre field widths in mm, from the start.",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "fields": {
+          "description": "create/divide: number of equal fields.",
+          "type": "number"
+        },
+        "frameType": {
+          "description": "create: type of the outer frame (both ends).",
+          "type": "string"
+        },
+        "fromMm": {
+          "description": "create in a wall: distance from the wall start to the START of the element, in mm.",
+          "type": "number"
+        },
+        "id": {
+          "description": "The facade element to read or edit (as returned by create or get).",
+          "type": "string"
+        },
+        "insideSide": {
+          "description": "create: which side of the drawing direction is inside (doors swing inside by default; default right).",
+          "enum": [
+            "right",
+            "left"
+          ],
+          "type": "string"
+        },
+        "lengthMm": {
+          "description": "create in a wall: length of the element = width of the gap, in mm (or give fieldWidthsMm).",
+          "type": "number"
+        },
+        "mullion": {
+          "description": "removeMullion/moveMullion/setMullionType: mullion index (0 = frame at the start).",
+          "type": "number"
+        },
+        "mullionType": {
+          "description": "create/addMullion/setMullionType: mullion type id, e.g. alu-50x150 or hout-67x114.",
+          "type": "string"
+        },
+        "offsetMm": {
+          "description": "create in a wall: position across the wall build-up, mm from the wall centre line, + = right of the wall direction (default 0).",
+          "type": "number"
+        },
+        "page": {
+          "description": "1-based page (default: the current page).",
+          "type": "number"
+        },
+        "panel": {
+          "description": "create: panel for every field not given in panels; setPanel: the new panel. A name (glass, solid, door, open, turnSash) or {type, hinge: start|end, swing: inside|outside}; an object without type only changes hinge/swing.",
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "panels": {
+          "description": "create: the panel of each field, from the start (a name or {type, hinge, swing}).",
+          "type": "array"
+        },
+        "preset": {
+          "description": "create: which kind of element (default curtainWall).",
+          "enum": [
+            "curtainWall",
+            "windowFrame"
+          ],
+          "type": "string"
+        },
+        "start": {
+          "additionalProperties": true,
+          "description": "create (loose): start of the element as {x, y} in page points.",
+          "type": "object"
+        },
+        "toMm": {
+          "description": "moveMullion: new position from the start, in mm.",
+          "type": "number"
+        },
+        "wallId": {
+          "description": "create: put the element in this wall annotation; the wall is cut over the element's length.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Draw facade element"
+    }
+  },
+  {
+    "name": "pdf_list_system_types",
+    "description": "List the reusable system types (suspended ceilings, floor slabs, panel systems) of the app library, or one type by id. Each entry has its stable id, owner, revision, whether the user edited it, the validated definition, unconfirmed dimensions and stored values that fail validation. Compare libraryRevision between calls to detect changes. Reads only.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Stable id of one system type.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "List system types"
+    }
+  },
+  {
+    "name": "pdf_register_system_type",
+    "description": "Register a system type owned by MCP under the id mcp:<key>. Repeating the call with the same definition changes nothing (status unchanged), and a definition the user edited in the app is kept (status kept-user-edit) and never overwritten. A different definition replaces an existing mcp:<key> type that the user has not edited (status updated) and redraws every system that uses it. Unknown fields, out-of-range values and layered definitions are rejected. Missing dimensions stay unconfirmed.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "additionalProperties": false,
+          "properties": {
+            "categorie": {
+              "enum": [
+                "plafond",
+                "vloer",
+                "wand",
+                "overig"
+              ],
+              "type": "string"
+            },
+            "celXMm": {
+              "description": "Cell width in mm. Left out or null: unconfirmed, no default is applied.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "celYMm": {
+              "description": "Cell height in mm. Left out or null: unconfirmed, no default is applied.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "edgeProfiel": {
+              "enum": [
+                "geen",
+                "hoeklijn",
+                "schaduwvoeg"
+              ],
+              "type": "string"
+            },
+            "ifcCategory": {
+              "enum": [
+                "IfcCovering",
+                "IfcWall",
+                "IfcSlab",
+                "IfcPlate"
+              ],
+              "type": "string"
+            },
+            "ifcPredefinedType": {
+              "enum": [
+                "CEILING",
+                "FLOORING",
+                "FLOOR",
+                "CLADDING",
+                "ROOFING",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lagen": {
+              "description": "Reserved. Schema 1 has one implicit layer; only an empty array is accepted.",
+              "maxItems": 0,
+              "type": "array"
+            },
+            "layout": {
+              "description": "raster: cells in two directions (needs celXMm and celYMm). strook: strips in one direction (needs strookBreedteMm and celYMm).",
+              "enum": [
+                "raster",
+                "strook"
+              ],
+              "type": "string"
+            },
+            "naam": {
+              "description": "Display name (1-200 characters). Not an identity: references use the id.",
+              "type": "string"
+            },
+            "paneelTypen": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "naam": {
+                    "type": "string"
+                  },
+                  "renderStijl": {
+                    "enum": [
+                      "tegel",
+                      "ventilatie",
+                      "licht"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "naam",
+                  "renderStijl"
+                ],
+                "type": "object"
+              },
+              "maxItems": 50,
+              "minItems": 1,
+              "type": "array"
+            },
+            "sparingRegels": {
+              "additionalProperties": false,
+              "properties": {
+                "kleineSparingMaxMm": {
+                  "maximum": 20000,
+                  "minimum": 10,
+                  "type": "number"
+                },
+                "raveelVanafMm": {
+                  "maximum": 20000,
+                  "minimum": 10,
+                  "type": "number"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "strookBreedteMm": {
+              "description": "Strip width in mm for the strook layout. Left out or null: unconfirmed.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "naam",
+            "categorie",
+            "layout"
+          ],
+          "type": "object"
+        },
+        "key": {
+          "description": "Stable key: lowercase letters, digits, dot, underscore or hyphen (1-64).",
+          "type": "string"
+        },
+        "restore": {
+          "description": "Recreate a type the user removed. Only on an explicit user request.",
+          "type": "boolean"
+        },
+        "schema": {
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key",
+        "definition"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Register system type"
+    }
+  },
+  {
+    "name": "pdf_update_system_type",
+    "description": "Update a system type owned by MCP (id mcp:<key>). Pass the revision you last read as expectedRevision; a stale revision is rejected with the current revision. Types of the app or of extensions cannot be changed here. Nested values (sparingRegels, paneelTypen) are replaced as a whole; null clears an optional field.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "changes": {
+          "additionalProperties": false,
+          "properties": {
+            "categorie": {
+              "enum": [
+                "plafond",
+                "vloer",
+                "wand",
+                "overig"
+              ],
+              "type": "string"
+            },
+            "celXMm": {
+              "description": "Cell width in mm. Left out or null: unconfirmed, no default is applied.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "celYMm": {
+              "description": "Cell height in mm. Left out or null: unconfirmed, no default is applied.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "edgeProfiel": {
+              "enum": [
+                "geen",
+                "hoeklijn",
+                "schaduwvoeg"
+              ],
+              "type": "string"
+            },
+            "ifcCategory": {
+              "enum": [
+                "IfcCovering",
+                "IfcWall",
+                "IfcSlab",
+                "IfcPlate"
+              ],
+              "type": "string"
+            },
+            "ifcPredefinedType": {
+              "enum": [
+                "CEILING",
+                "FLOORING",
+                "FLOOR",
+                "CLADDING",
+                "ROOFING",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lagen": {
+              "description": "Reserved. Schema 1 has one implicit layer; only an empty array is accepted.",
+              "maxItems": 0,
+              "type": "array"
+            },
+            "layout": {
+              "description": "raster: cells in two directions (needs celXMm and celYMm). strook: strips in one direction (needs strookBreedteMm and celYMm).",
+              "enum": [
+                "raster",
+                "strook"
+              ],
+              "type": "string"
+            },
+            "naam": {
+              "description": "Display name (1-200 characters). Not an identity: references use the id.",
+              "type": "string"
+            },
+            "paneelTypen": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "naam": {
+                    "type": "string"
+                  },
+                  "renderStijl": {
+                    "enum": [
+                      "tegel",
+                      "ventilatie",
+                      "licht"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "naam",
+                  "renderStijl"
+                ],
+                "type": "object"
+              },
+              "maxItems": 50,
+              "minItems": 1,
+              "type": "array"
+            },
+            "sparingRegels": {
+              "additionalProperties": false,
+              "properties": {
+                "kleineSparingMaxMm": {
+                  "maximum": 20000,
+                  "minimum": 10,
+                  "type": "number"
+                },
+                "raveelVanafMm": {
+                  "maximum": 20000,
+                  "minimum": 10,
+                  "type": "number"
+                }
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "strookBreedteMm": {
+              "description": "Strip width in mm for the strook layout. Left out or null: unconfirmed.",
+              "maximum": 20000,
+              "minimum": 50,
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "expectedRevision": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "schema": {
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision",
+        "changes"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Update system type"
+    }
+  },
+  {
+    "name": "pdf_open_system_type_editor",
+    "description": "Open the app's system type editor with the given type selected, or select it in the editor that is already open without discarding unapplied edits. Returns immediately; the user applies or cancels in the app. Does not change any data.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Stable id of the system type to select.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Open system type editor"
+    }
+  },
+  {
+    "name": "pdf_get_system_geometry",
+    "description": "Get the geometry of one system (suspended ceiling, floor slab, panel field) in the active document, computed by the app's own geometry engine: panels with clipped outlines, grid lines, openings, trimmers, edge segments and component positions, in millimetres in the system's own frame (independent of zoom and view rotation; placement maps it onto the page). Includes the document and type revisions and whether every physical dimension is confirmed. Pass expectedDocumentRevision and expectedTypeRevision to reject a stale snapshot. Reads only.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "annotationId": {
+          "description": "Id of the system annotation (type systeemraster) in the active document.",
+          "type": "string"
+        },
+        "expectedDocumentRevision": {
+          "description": "document.revision of an earlier snapshot; a different current revision is rejected.",
+          "type": "string"
+        },
+        "expectedTypeRevision": {
+          "description": "type.revision of an earlier snapshot; a different current revision is rejected.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "schema": {
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "annotationId"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Get system geometry"
+    }
+  }
+]

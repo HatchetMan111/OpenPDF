@@ -1,0 +1,1 @@
+function i(t){return typeof t!="string"||!t||t.length>512||t.includes("\0")||t.includes(":")||t.startsWith("/")||t.startsWith("\\")?!1:t.split(/[\\/]/).every(s=>s!==".."&&s!=="."&&s!=="")}export{i as isVeiligAssetPad};

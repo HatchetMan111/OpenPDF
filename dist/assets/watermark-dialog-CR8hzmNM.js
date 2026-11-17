@@ -1,0 +1,1 @@
+import{af as o}from"./index-34CiHXSU.js";function e(a=null){o("watermark",{editWm:a})}function n(a=null){o("header-footer",{editWm:a})}function t(){o("manage-watermarks")}export{n as showHeaderFooterDialog,t as showManageWatermarksDialog,e as showWatermarkDialog};

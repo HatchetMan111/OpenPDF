@@ -1,0 +1,3 @@
+# Upstream working copy + local build toolchain (nicht committen — dist/ ist committed)
+.upstream/
+*.log
