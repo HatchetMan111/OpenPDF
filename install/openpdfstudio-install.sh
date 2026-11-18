@@ -120,9 +120,13 @@ if (( TARBALL_SIZE < 1000000 )); then
     msg_error "dist-Tarball verdächtig klein (${TARBALL_SIZE} Bytes) — abgebrochen."
     exit 1
 fi
-if ! tar -tzf "$TARBALL" 2>/dev/null | grep -q "dist/index.html"; then
+if ! TARBALL_LISTING=$(tar -tzf "$TARBALL" 2>/dev/null); then
+    msg_error "Tarball ist kein gültiges gzip-Archiv (tar -tzf fehlgeschlagen)."
+    exit 1
+fi
+if ! printf '%s\n' "$TARBALL_LISTING" | grep -q "dist/index.html"; then
     msg_error "Tarball enthält kein dist/index.html — falsches Repo oder leeres main?"
-    { tar -tzf "$TARBALL" 2>/dev/null | head -n 10 || true; } >&2
+    { printf '%s\n' "$TARBALL_LISTING" | head -n 10 || true; } >&2
     exit 1
 fi
 msg_ok "dist-Tarball geladen ($(( TARBALL_SIZE / 1024 / 1024 )) MB)"
