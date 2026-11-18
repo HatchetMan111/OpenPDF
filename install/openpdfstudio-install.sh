@@ -189,10 +189,16 @@ server {
         text/css
         text/plain;
 
-    # fehlende MIME-Typen ergänzen (merge — ersetzt die Basistabelle nicht)
+    # MIME-Typen: erst die Standard-Tabelle laden, dann die für den Web-Build
+    # fehlenden ergänzen. WICHTIG: ein `types`-Block ersetzt die globale
+    # mime.types-Tabelle komplett — ohne include würde alles als
+    # application/octet-stream ausgeliefert und der Browser lädt JS-Dateien
+    # herunter statt die App auszuführen.
+    include /etc/nginx/mime.types;
     types {
-        application/wasm wasm;
-        application/javascript js mjs;
+        application/wasm                    wasm;
+        application/javascript             js mjs;
+        font/woff2                         woff2;
     }
 
     # Hash-Assets: unveränderlich cachebar (Dateinamen enthalten den Hash)
