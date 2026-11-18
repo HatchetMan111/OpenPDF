@@ -131,9 +131,8 @@ case "$TARBALL_LISTING" in
     *"dist/index.html"*) : ;;  # Treffer — gut
     *)
         msg_error "Tarball enthält kein dist/index.html — falsches Repo oder leeres main?"
-        # head -n 10 liest nur 10 Zeilen und schließt die Pipe — aber das ist
-        # hier OK, weil TARBALL_LISTING schon in einer Variable steht (kein
-        # live-Datenstrom mehr). Kein SIGPIPE-Risiko.
+        # head -n 10 auf eine Variable (kein live-Datenstrom) ist sicher —
+        # TARBALL_LISTING steht schon komplett im Speicher, kein SIGPIPE.
         printf '%s\n' "$TARBALL_LISTING" | head -n 10 >&2 || true
         exit 1
         ;;
