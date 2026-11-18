@@ -29,7 +29,7 @@ UPDATE_MODE="${UPDATE_MODE:-0}"
 APP_DIR="/var/www/open-pdf-studio"
 VHOST="/etc/nginx/sites-available/open-pdf-studio.conf"
 VHOST_ENABLED="/etc/nginx/sites-enabled/open-pdf-studio.conf"
-DIST_TARBALL_URL="https://codeload.github.com/HatchetMan111/OpenPDFStudio-Proxmox/tar.gz/refs/heads/main"
+DIST_TARBALL_URL="https://codeload.github.com/HatchetMan111/OpenPDF/tar.gz/refs/heads/main"
 
 # ── Farben + Helper (Community-Scripts-Stil) ─────────────────────────────────
 if [[ -t 1 ]] && [[ "${OPDS_NO_COLOR:-}" != "1" ]]; then
@@ -138,7 +138,7 @@ rm -rf /tmp/opds-meta
 msg_info "Deploye nach ${APP_DIR} (atomar: .new → swap)"
 rm -rf "${APP_DIR}.new"
 mkdir -p "${APP_DIR}.new"
-# Tarball-Mitglieder OpenPDFStudio-Proxmox-main/dist/<x> → direkt <x> (strip 2)
+# Tarball-Mitglieder OpenPDF-main/dist/<x> → direkt <x> (strip 2)
 tar -xzf "$TARBALL" -C "${APP_DIR}.new" --strip-components=2 --wildcards '*/dist/*'
 [[ -f "${APP_DIR}.new/index.html" ]] || { msg_error "index.html fehlt nach dem Entpacken."; exit 1; }
 printf '%s\n' "${OPDS_VERSION_DETECTED}" > "${APP_DIR}.new/.opds-version"

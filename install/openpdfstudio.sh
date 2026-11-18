@@ -6,7 +6,7 @@
 # Repo: https://github.com/OpenAEC-Foundation/open-pdf-studio  (v2026.47.0, LGPL-3.0+)
 #
 # Einzeiler (auf dem Proxmox-Host als root):
-#   bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh)"
+#   bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh)"
 #
 # Was passiert:
 #   1. Erzeugt einen unprivilegierten LXC (Debian, nesting=1, onboot=1, DHCP)
@@ -28,7 +28,7 @@ set -euo pipefail
 
 # ── Benutzervariablen (env-überschreibbar) ───────────────────────────────────
 APP="Open PDF Studio"
-OPDS_REPO_RAW="${OPDS_REPO_RAW:-https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main}"
+OPDS_REPO_RAW="${OPDS_REPO_RAW:-https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main}"
 OPDS_CTID="${OPDS_CTID:-}"
 OPDS_CTHOSTNAME="${OPDS_CTHOSTNAME:-open-pdf-studio}"
 OPDS_OS="${OPDS_OS:-debian}"

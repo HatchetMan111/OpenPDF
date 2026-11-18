@@ -14,7 +14,7 @@ CAD-Import** — ohne Account, ohne Abo, ohne Wasserzeichen. Dieser Installer br
 ## 🚀 Einzeiler-Installation (auf dem Proxmox-Host als root)
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh)"
 ```
 
 Das Script (Community-Scripts-Stil):
@@ -47,7 +47,7 @@ Danach erreichst du die App unter **`http://<LXC-IP>:8080`**.
 Beispiel mit eigenen Werten:
 
 ```bash
-OPDS_CTID=120 OPDS_PORT=8090 OPDS_RAM=1024 bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh)"
+OPDS_CTID=120 OPDS_PORT=8090 OPDS_RAM=1024 bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh)"
 ```
 
 ## 🔄 Update
@@ -68,7 +68,7 @@ UPSTREAM_REF=v2026.48.0 bash tools/build-dist.sh
 ## 🗑️ Deinstallation
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh)" --uninstall
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh)" --uninstall
 ```
 
 (Sicherheitsnetz: es wird nur ein CT mit dem Hostnamen `open-pdf-studio` gelöscht —
@@ -77,7 +77,7 @@ oder das per `OPDS_CTID=<id>` benannte, wenn dessen Hostname passt.)
 ## 📊 Status
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh)" --status
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh)" --status
 ```
 
 zeigt CT-Status, IP, nginx-Status, HTTP-Code der Web-UI und die installierte Version.
@@ -108,7 +108,7 @@ Exit-Code, Script-Zeile, Log-Auszüge aus dem CT, nginx-Status, DNS-Diagnostik).
 Für einen vollständigen Trace:
 
 ```bash
-wget -qO /tmp/openpdfstudio.sh https://raw.githubusercontent.com/HatchetMan111/OpenPDFStudio-Proxmox/main/install/openpdfstudio.sh
+wget -qO /tmp/openpdfstudio.sh https://raw.githubusercontent.com/HatchetMan111/OpenPDF/main/install/openpdfstudio.sh
 bash -x /tmp/openpdfstudio.sh
 ```
 

@@ -67,7 +67,7 @@ printf 'body{background:#222}\n' > "${FIXTURE}/dist/assets/index-TESTHASH.css"
 dd if=/dev/urandom of="${FIXTURE}/dist/assets/app-TESTHASH.js" bs=1M count=2 2>/dev/null
 printf 'vTEST.47.0\n' > "${FIXTURE}/VERSION"
 tar -czf "${HARNESS_TARBALL}" --owner=0 --group=0 -C "${FIXTURE}" \
-    --transform 's|^|OpenPDFStudio-Proxmox-main/|' dist VERSION
+    --transform 's|^|OpenPDF-main/|' dist VERSION
 
 # ── Test-Framework ───────────────────────────────────────────────────────────
 PASS=0; FAIL=0; FAILED_LABELS=()
