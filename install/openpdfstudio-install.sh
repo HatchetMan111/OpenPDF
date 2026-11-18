@@ -124,11 +124,20 @@ if ! TARBALL_LISTING=$(tar -tzf "$TARBALL" 2>/dev/null); then
     msg_error "Tarball ist kein gültiges gzip-Archiv (tar -tzf fehlgeschlagen)."
     exit 1
 fi
-if ! printf '%s\n' "$TARBALL_LISTING" | grep -q "dist/index.html"; then
-    msg_error "Tarball enthält kein dist/index.html — falsches Repo oder leeres main?"
-    { printf '%s\n' "$TARBALL_LISTING" | head -n 10 || true; } >&2
-    exit 1
-fi
+# KEINE Pipeline mit grep -q! grep -q schließt die Pipe beim ersten Treffer,
+# der andere Befehl stirbt an SIGPIPE (Broken pipe) — unter set -euo pipefail
+# wird das als Fehler gemeldet. Darum: Variable in case/Shell-Muster prüfen.
+case "$TARBALL_LISTING" in
+    *"dist/index.html"*) : ;;  # Treffer — gut
+    *)
+        msg_error "Tarball enthält kein dist/index.html — falsches Repo oder leeres main?"
+        # head -n 10 liest nur 10 Zeilen und schließt die Pipe — aber das ist
+        # hier OK, weil TARBALL_LISTING schon in einer Variable steht (kein
+        # live-Datenstrom mehr). Kein SIGPIPE-Risiko.
+        printf '%s\n' "$TARBALL_LISTING" | head -n 10 >&2 || true
+        exit 1
+        ;;
+esac
 msg_ok "dist-Tarball geladen ($(( TARBALL_SIZE / 1024 / 1024 )) MB)"
 
 # Version aus dem Tarball-Root (falls neu gepusht wurde, ist das die aktuelle)
@@ -270,12 +279,21 @@ fi
 msg_ok "App-Titel bestätigt: ${TITLE}"
 
 # ── Firewall (in LXC meist inaktiv — dokumentierter No-op) ───────────────────
-if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then
-    STD ufw allow "${OPDS_PORT}/tcp"
-    msg_ok "ufw: Port ${OPDS_PORT} freigegeben"
-else
-    msg_ok "Keine aktive Firewall (ufw) — Port ${OPDS_PORT} ist offen"
+# Kein `ufw status | grep -q`: grep -q schließt die Pipe beim ersten Treffer,
+# ufw stirbt an SIGPIPE → pipefail meldet Fehler. Status erst in Variable holen.
+UFW_OUT=""
+if command -v ufw >/dev/null 2>&1; then
+    UFW_OUT=$(ufw status 2>/dev/null || true)
 fi
+case "$UFW_OUT" in
+    *"Status: active"*)
+        STD ufw allow "${OPDS_PORT}/tcp"
+        msg_ok "ufw: Port ${OPDS_PORT} freigegeben"
+        ;;
+    *)
+        msg_ok "Keine aktive Firewall (ufw) — Port ${OPDS_PORT} ist offen"
+        ;;
+esac
 
 msg_info "In-Container-Install erfolgreich abgeschlossen"
 exit 0
